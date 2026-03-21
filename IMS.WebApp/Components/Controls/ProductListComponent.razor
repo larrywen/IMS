@@ -1,0 +1,39 @@
+﻿@inject IViewProductsByNameUseCase ViewProductsByNameUseCase
+
+@if (products is not null && products.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th></th>
+                <th style="text-align:left"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var prod in products)
+            {
+                <ProductListItemComponent @rendermode="InteractiveServer" Product="prod"></ProductListItemComponent>
+            }
+        </tbody>
+    </table>
+    }
+
+@code {
+    private List<Product>? products;
+
+    [Parameter]
+    public string? SearchProductFilter { get; set; }
+    /*
+    protected override async Task OnInitializedAsync()  //happens first
+    {
+        products = (await ViewProductsByNameUseCase.ExecuteAsync(SearchProductFilter??"")).ToList();
+    }
+    */
+    protected override async Task OnParametersSetAsync() //triggered when a parameter assigned
+    {
+        products = (await ViewProductsByNameUseCase.ExecuteAsync(SearchProductFilter ?? string.Empty)).ToList();
+    }
+}
