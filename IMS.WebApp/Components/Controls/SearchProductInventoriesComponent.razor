@@ -45,7 +45,7 @@
         await Task.Delay(1000); //simulate a relative long running database call
         inventories = (await ViewInventoriesByNameUseCase.ExecuteAsync(this.searchFilter)).ToList();
 
-        StateHasChanged();
+        StateHasChanged(); //****
     }
 
     private async Task HandleSelectInventory(Inventory inventory)

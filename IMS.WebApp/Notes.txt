@@ -1,0 +1,77 @@
+﻿
+
+
+39. Use Enhanced form handling for partial page rendering
+<EditForm Enhance="true" Model="searchFilter" FormName="formSearch" OnSubmit="Search">
+	Enhance="true", enhancedform handling achieve a partial page rendering without adding webassembly
+
+
+
+41. Delete Inventory with Enhanced EditForm
+C:\CodeUdemy\IMS\IMS.WebApp\Components\Controls\InventoryListItemComponent.razor
+@inject IDeleteInventoryUseCase DeleteInventoryUseCase
+@inject NavigationManager NavigationManager
+
+@if(this.Inventory is not null)
+{
+    <tr>
+        <td>@Inventory.InventoryName</td>
+        <td>@Inventory.Quantity</td>
+        <td>@Inventory.Price.ToString("c")</td>
+        <td>
+            <a class="btn btn-light"
+            href="/editinventory/@Inventory.InventoryId">
+                Edit
+            </a>
+        </td>
+        <td>
+                       @* here   *@
+            <EditForm Enhance="true" Model="Inventory" FormName="@($"form-delete-inventory-{Inventory.InventoryId}")"
+            OnValidSubmit="() => DeleteInventory(Inventory.InventoryId)">
+                <button type="submit" class="btn btn-light">Delete</button>
+            </EditForm>
+        </td>
+    </tr>
+}
+
+@code {
+    [Parameter]
+    public Inventory? Inventory { get; set; }
+
+    private async Task DeleteInventory(int inventoryId)
+    {
+        await DeleteInventoryUseCase.ExecuteAsync(inventoryId);
+        NavigationManager.Refresh();  //***rendering html happens before DeleteInventory executed, use NavigationManager to fix the problem
+    }
+}
+
+
+44. Enable and Use Server Interactivity for Deleting Products
+C:\CodeUdemy\IMS\IMS.WebApp\Program.cs
+    // Add services to the container.
+    builder.Services.AddRazorComponents()
+        .AddInteractiveServerComponents();
+    app.MapRazorComponents<App>()
+        .AddInteractiveServerRenderMode();
+
+C:\CodeUdemy\IMS\IMS.WebApp\Components\Controls\ProductListComponent.razor
+    <ProductListItemComponent @rendermode="InteractiveServer" Product="prod"></ProductListItemComponent>
+C:\CodeUdemy\IMS\IMS.WebApp\Components\Controls\ProductListItemComponent.razor
+    private async Task HandleDelete(int productId)
+    {
+        await DeleteProductUseCase.ExecuteAsync(productId);
+        this.Product = null; //remove the product from the list
+
+        //NavigationManager.Refresh();  //rendering html happens before DeleteProduct executed, use NavigationManager to fix the problem for SSR
+    }
+
+50. Use ValidationAttribute to do custom validation
+    C:\CodeUdemy\IMS\IMS.CoreBusiness\Validations\Product_EnsurePriceIsGreateThanInventoriesCost.cs
+    public class Product_EnsurePriceIsGreateThanInventoriesCost : ValidationAttribute
+
+51. Improve Product Inventory Component Layout with Bootstrap Card
+    getbootstrap.com/docs/5.3/components/card
+
+section 7.Edit Product
+52. Edit Product Requirements
+
