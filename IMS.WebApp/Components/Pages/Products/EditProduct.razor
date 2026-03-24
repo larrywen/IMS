@@ -1,4 +1,8 @@
-﻿@page "/editproduct/{invId:int}"
+﻿@page "/editproduct/{id:int}"
+
+@rendermode InteractiveServer
+
+
 @inject IViewProductByIdUseCase  ViewProductByIdUseCase
 @inject IEditProductUseCase EditProductUseCase
 @inject NavigationManager NavigationManager
@@ -40,24 +44,35 @@
             </InputNumber>
             <ValidationMessage For="() => product.Price"></ValidationMessage>
         </div>
+
+        <div class="form-group">
+            <label for="inventories">Inventories</label>
+            <ProductInventoriesComponent Product="this.product"></ProductInventoriesComponent>
+        </div>
         <br />
         <button type="submit" class="btn btn-primary">Update</button>
         &nbsp;
-        <a href="/inventories" class="btn btn-primary">Cancel</a>
+        <a href="/products" class="btn btn-primary">Cancel</a>
     </EditForm>
 }
 
 @code {
     [Parameter]
-    public int InvId { get; set; }
+    public int Id { get; set; }
 
-    [SupplyParameterFromForm]
-    private Product? product { get; set; } //declare as property in order to use [SupplyParameterFromForm] attribute
+    //[SupplyParameterFromForm]
+    private Product? product;// { get; set; } //declare as property in order to use [SupplyParameterFromForm] attribute
 
     protected override async Task OnParametersSetAsync()
     {
-        this.product ??= await ViewProductByIdUseCase.ExecuteAsync(this.InvId);
+        this.product ??= await ViewProductByIdUseCase.ExecuteAsync(this.Id);
         //if this.product has value, will not call
+
+        //.Net 10
+        // if(product is null)
+        // {
+        //     NavigationManager.NotFound();
+        // }
     }
 
     private async Task Update()
@@ -65,7 +80,7 @@
         if (product is not null)
         {
             await EditProductUseCase.ExecuteAsync(product);
-            NavigationManager.NavigateTo("/inventories");
+            NavigationManager.NavigateTo("/products");
         }
         
     }

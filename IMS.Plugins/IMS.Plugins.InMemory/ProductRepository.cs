@@ -48,24 +48,63 @@ namespace IMS.Plugins.InMemory
 
         public async Task<Product> GetProductByIdAsync(int ProductId)
         {
-            return await Task.FromResult(_products.First(x => x.ProductId == ProductId));
+            var prod = _products.FirstOrDefault(x => x.ProductId == ProductId);
+            var newProd = new Product();
+            if(prod != null)
+            {
+                newProd.ProductId = prod.ProductId;
+                newProd.ProductName = prod.ProductName;
+                newProd.Quantity = prod.Quantity;
+                newProd.Price = prod.Price;
+                newProd.ProductInventories = new List<ProductInventory>();
+                if(prod.ProductInventories != null && prod.ProductInventories.Count > 0)
+                {
+                    foreach (var prodInv in prod.ProductInventories)
+                    {
+                        var newProdInv = new ProductInventory
+                        {
+                            InventoryId = prodInv.InventoryId,
+                            ProductId = prodInv.ProductId,
+                            Product = prod,
+                            Inventory = new Inventory(),
+                            InventoryQuantity = prodInv.InventoryQuantity,
+                        };
+                        if (prodInv.Inventory != null)
+                        {
+                            newProdInv.Inventory.InventoryId = prodInv.Inventory.InventoryId;
+                            newProdInv.Inventory.InventoryName = prodInv.Inventory.InventoryName;
+                            newProdInv.Inventory.Price = prodInv.Inventory.Price;
+                            newProdInv.Inventory.Quantity = prodInv.Inventory.Quantity;
+                        }
+
+                        newProd.ProductInventories.Add(newProdInv);
+                    }
+                }
+            }
+            return await Task.FromResult(newProd);
         }
 
-        public Task UpdateProductAsync(Product Product)
+        public Task UpdateProductAsync(Product product)
         {
-            if(_products.Any(x=>x.ProductId != Product.ProductId && 
-                x.ProductName.Equals(Product.ProductName, StringComparison.OrdinalIgnoreCase)))
+            if(_products.Any(x=>x.ProductId != product.ProductId && 
+                x.ProductName.Equals(product.ProductName, StringComparison.OrdinalIgnoreCase)))
                 return Task.CompletedTask;
 
-            var invToUpdate = _products.FirstOrDefault(inv => inv.ProductId == Product.ProductId);
-            if(invToUpdate is not null)
+            var prod = _products.FirstOrDefault(x => x.ProductId == product.ProductId);
+            if(prod != null)
             {
-                invToUpdate.ProductName = Product.ProductName;
-                invToUpdate.Quantity = Product.Quantity;
-                invToUpdate.Price = Product.Price;
+                prod.ProductName = product.ProductName;
+                prod.Quantity = product.Quantity;
+                prod.Price = product.Price;
+                prod.ProductInventories = product.ProductInventories;
             }
 
             return Task.CompletedTask;
+        }
+
+        public Task<bool> ExistsAsync(Product product)
+        {
+            throw new NotImplementedException();
         }
     }
 }
